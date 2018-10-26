@@ -1,0 +1,2 @@
+# CalAmphibOcc
+Occupancy models
