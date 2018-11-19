@@ -1,20 +1,10 @@
-# The purpose of this project is to explore the historical patterns of Rib load
-# and PSRE malf. in the Bay area + Lass and into explore any additional pattern 
-# explained by climate variables. This data is from 10 sites across 9 years of 
-# data for the bay area and 2 sites over 20 years of data lets get to it 
+### This code maniuates the daily climate data to get it into a format to began 
+### building models explore the impact of climate on amphibian occurances
 
-
-### This code is to maniuate climate data to get it into a format to began 
-### building models explore the impact of climate on rib load and malformations
-### 
-### The first half of the code focuses on the bay area and the second half on
-### lassen
 
 ## Creation date : 11/06/2018
 
 library(tidyverse)
-
-library(lme4)
 
 setwd("~/Desktop/Current_Projects/Amphibian_Occ/Amphib_Occ_Prog")
 
@@ -260,4 +250,3 @@ weather.df  <- full_join(weather.df  ,
 ## Writing a new csv file from the compiled climate data
 
 #write.csv( weather.df, file = "bay_weather.csv")
-
