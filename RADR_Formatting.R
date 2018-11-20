@@ -71,7 +71,7 @@ colnames(radr.y2) <- c("SiteCode", "1997_1","1997_2",
 
 
 colSums(radr.y2[,2:33], na.rm=T)
-
+## Woah--there were no observations until 2009...why is this? dummy data related?
 
 ## Filtering for the proper site codes
 
@@ -79,7 +79,7 @@ radr.y2 <- filter(radr.y2, SiteCode %in% site.df$SiteCode)
 
 
 
-#write.csv( radr.y2, file = "RADR_OCC.csv")
+write.csv( radr.y2, file = "RADR_OCC_clean.csv")
 
 
 
@@ -109,6 +109,14 @@ obs.df1<- filter(obs.df1, SiteCode %in% site.df$SiteCode)
 obser.df <- select( obs.df1,c("SiteCode", "Year", "Round","PondArea..m.",
                               "Perimeter..m.", "Temp..","DRY" ) )
 
+# obser.df %>% group_by(SiteCode, Year) %>% summarise(n()) %>% View
+
+## Pre 2009 there are no covariates 
+## Pre 2009 many sites only had one visit per year
+## 808 sites had two visits
+
+## Default is dry--is that true? should be blank?
+## Defualt temp seems to be zero we need to fix that
 ## renaming varables
 
 colnames(obser.df)[4:7] <- c( "Area", "Perimeter", "Temp", "Dry") 
@@ -116,6 +124,8 @@ colnames(obser.df)[4:7] <- c( "Area", "Perimeter", "Temp", "Dry")
 # Whoops forgor I need "Year" and "Round" as a single varible
 
 obser.df <- unite( obser.df, "YearRound", c("Year", "Round"), sep= "_" )
+head(obser.df)
+
 
 ### According to unmarked we need to have each observation variable in its own
 ### data frame so lets do that
@@ -126,6 +136,7 @@ obArea.df <- obser.df[,c(1,2,3)]
 
 obArea.df <- reshape(obArea.df, idvar = "SiteCode", 
                    timevar = "YearRound", direction = "wide")
+## some sites NEVER have area
 
 ## lets rearrange the columns so they are in chronological order
 
@@ -191,7 +202,9 @@ colnames(obPerim.df) <-  c("SiteCode", "1997_1","1997_2",
                           "2014_2","2015_1","2015_2",
                           "2016_1","2016_2","2017_1",
                           "2017_2","2018_1","2018_2") 
-
+rowSums(obPerim.df[, 14:33], na.rm = TRUE) * NA^(rowSums(!is.na(obPerim.df[, 14:33])) == 0)
+sort(rowSums(!is.na(obPerim.df[, 14:33])))
+# 20 possible observations from 2009 to 2018, no sites have all 20
 
 ### creating a df for observation level for Temp.
 
@@ -271,13 +284,31 @@ radr.obs <- list( SiteCode= obTemp.df[,1], Area = obArea.df[,2:33],
                   Perim = obPerim.df[,2:33], 
              Temp = obTemp.df[,2:33], Dry= obDry.df[,2:33])
 
-
+# save(radr.obs, file = "RADR.Obs.Rdata")
 
 ## Checking to make sure the diminsions are all good
+data("mallard")
 
+
+# OBSERVATIONS
+head(mallard.y)
+head(radr.y2) # looks in the right format but we need to remove the first column
+radr.y2 <- radr.y2[, -1]
 dim(radr.y2) ## 387 x 33
 
+# SITE LEVEL COVARIATES
+head(mallard.site)
 dim(site.df) ## 387 x 3
+head(site.df)
+site.df <- site.df[, -1]
+
+
+# OBSERVATION LEVEL COVARIATES
+head(mallard.obs$ivel)
+head(mallard.obs$date)
+head(radr.obs$Area)
+
+
 
 dim(obArea.df) ## 387 x 33
 
@@ -290,3 +321,56 @@ dim(obDry.df) ## 387 x 33
 
 # Cool all the data is filtered and have the same site code now we can begin to
 # model
+
+
+mallardUMF <- unmarkedFramePCount(y = mallard.y, siteCovs = mallard.site, obsCovs = mallard.obs)
+
+RADR.UMF <- unmarkedFrameOccuFP(y = radr.y2,
+                                siteCovs = site.df,
+                                obsCovs = radr.obs)
+Radr.UMF <- unmarkedMultFrame( y= radr.y2[,10:33], siteCovs = site.df[,2:3],
+                               obsCovs = list(  Area = obArea.df[,10:33],
+                                                Perim = obPerim.df[,10:33], 
+                                                Temp = obTemp.df[,10:33],
+                                                Dry= obDry.df[,10:33]),
+                               numPrimary = 12 )
+
+summary( Radr.UMF)
+
+sRadr.UMF <- unmarkedMultFrame( y= radr.y2[,10:33], siteCovs =site.df[,2:3],
+                                obsCovs = list(Area = scale(obArea.df[,10:33]),
+                                               Perim = scale(obPerim.df[,10:33]), 
+                                               Temp = scale(obTemp.df[,10:33]),
+                                               Dry= obDry.df[,10:33]),
+                                numPrimary = 12 )
+
+summary( sRadr.UMF )
+
+model0 <- colext( psiformula = ~ 1 , 
+                  gammaformula = ~ 1,
+                  epsilonformula = ~ 1  ,
+                  pformula = ~ 1 , data= Radr.UMF)
+
+summary( model0 )
+
+
+model1 <- colext( psiformula = ~ scale(Elev) * (Forest) , 
+                  gammaformula = ~ scale(Elev) + (Forest) ,
+                  epsilonformula = ~ scale(Elev) + Forest  ,
+                  pformula = ~ Temp , data= sRadr.UMF)
+
+summary( model1 )
+
+
+
+
+
+model2 <- colext( psiformula = ~ (Elev) + Forest , 
+                  gammaformula = ~ Elev + Forest ,
+                  epsilonformula = ~ Elev + Forest  ,
+                  pformula = ~Perim +Temp , data= sRadr.UMF)
+
+summary( model2 )
+
+
+
