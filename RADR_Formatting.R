@@ -271,8 +271,6 @@ radr.obs <- list( SiteCode= obTemp.df[,1], Area = obArea.df[,2:33],
                   Perim = obPerim.df[,2:33], 
              Temp = obTemp.df[,2:33], Dry= obDry.df[,2:33])
 
-
-
 ## Checking to make sure the diminsions are all good
 
 dim(radr.y2) ## 387 x 33
@@ -290,3 +288,53 @@ dim(obDry.df) ## 387 x 33
 
 # Cool all the data is filtered and have the same site code now we can begin to
 # model
+
+obDry.df$SiteCode[63]
+
+
+Radr.UMF <- unmarkedMultFrame( y= radr.y2[,10:33], siteCovs = site.df[,2:3],
+                          obsCovs = list(  Area = obArea.df[,10:33],
+                                          Perim = obPerim.df[,10:33], 
+                                          Temp = obTemp.df[,10:33],
+                                          Dry= obDry.df[,10:33]),
+                           numPrimary = 12 )
+
+summary( Radr.UMF)
+
+sRadr.UMF <- unmarkedMultFrame( y= radr.y2[,10:33], siteCovs =site.df[,2:3],
+                               obsCovs = list(Area = scale(obArea.df[,10:33]),
+                                              Perim = scale(obPerim.df[,10:33]), 
+                                                Temp = scale(obTemp.df[,10:33]),
+                                                Dry= obDry.df[,10:33]),
+                               numPrimary = 12 )
+
+summary( sRadr.UMF )
+
+model0 <- colext( psiformula = ~ 1 , 
+                  gammaformula = ~ 1,
+                  epsilonformula = ~ 1  ,
+                  pformula = ~ 1 , data= Radr.UMF)
+
+summary( model0 )
+
+
+model1 <- colext( psiformula = ~ scale(Elev) * (Forest) , 
+               gammaformula = ~ scale(Elev) + (Forest) ,
+               epsilonformula = ~ scale(Elev) + Forest  ,
+               pformula = ~ Temp , data= sRadr.UMF)
+
+summary( model1 )
+
+
+
+
+
+model2 <- colext( psiformula = ~ (Elev) + Forest , 
+                  gammaformula = ~ Elev + Forest ,
+                  epsilonformula = ~ Elev + Forest  ,
+                  pformula = ~Perim +Temp , data= sRadr.UMF)
+
+summary( model2 )
+
+
+
