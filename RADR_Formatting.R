@@ -284,8 +284,11 @@ radr.obs <- list( SiteCode= obTemp.df[,1], Area = obArea.df[,2:33],
                   Perim = obPerim.df[,2:33], 
              Temp = obTemp.df[,2:33], Dry= obDry.df[,2:33])
 
+<<<<<<< HEAD
 # save(radr.obs, file = "RADR.Obs.Rdata")
 
+=======
+>>>>>>> e610b3ec133dc63319e5e92baf61c1e3758713d0
 ## Checking to make sure the diminsions are all good
 data("mallard")
 
@@ -322,6 +325,7 @@ dim(obDry.df) ## 387 x 33
 # Cool all the data is filtered and have the same site code now we can begin to
 # model
 
+<<<<<<< HEAD
 
 mallardUMF <- unmarkedFramePCount(y = mallard.y, siteCovs = mallard.site, obsCovs = mallard.obs)
 
@@ -334,15 +338,34 @@ Radr.UMF <- unmarkedMultFrame( y= radr.y2[,10:33], siteCovs = site.df[,2:3],
                                                 Temp = obTemp.df[,10:33],
                                                 Dry= obDry.df[,10:33]),
                                numPrimary = 12 )
+=======
+obDry.df$SiteCode[63]
+
+
+Radr.UMF <- unmarkedMultFrame( y= radr.y2[,10:33], siteCovs = site.df[,2:3],
+                          obsCovs = list(  Area = obArea.df[,10:33],
+                                          Perim = obPerim.df[,10:33], 
+                                          Temp = obTemp.df[,10:33],
+                                          Dry= obDry.df[,10:33]),
+                           numPrimary = 12 )
+>>>>>>> e610b3ec133dc63319e5e92baf61c1e3758713d0
 
 summary( Radr.UMF)
 
 sRadr.UMF <- unmarkedMultFrame( y= radr.y2[,10:33], siteCovs =site.df[,2:3],
+<<<<<<< HEAD
                                 obsCovs = list(Area = scale(obArea.df[,10:33]),
                                                Perim = scale(obPerim.df[,10:33]), 
                                                Temp = scale(obTemp.df[,10:33]),
                                                Dry= obDry.df[,10:33]),
                                 numPrimary = 12 )
+=======
+                               obsCovs = list(Area = scale(obArea.df[,10:33]),
+                                              Perim = scale(obPerim.df[,10:33]), 
+                                                Temp = scale(obTemp.df[,10:33]),
+                                                Dry= obDry.df[,10:33]),
+                               numPrimary = 12 )
+>>>>>>> e610b3ec133dc63319e5e92baf61c1e3758713d0
 
 summary( sRadr.UMF )
 
@@ -355,9 +378,15 @@ summary( model0 )
 
 
 model1 <- colext( psiformula = ~ scale(Elev) * (Forest) , 
+<<<<<<< HEAD
                   gammaformula = ~ scale(Elev) + (Forest) ,
                   epsilonformula = ~ scale(Elev) + Forest  ,
                   pformula = ~ Temp , data= sRadr.UMF)
+=======
+               gammaformula = ~ scale(Elev) + (Forest) ,
+               epsilonformula = ~ scale(Elev) + Forest  ,
+               pformula = ~ Temp , data= sRadr.UMF)
+>>>>>>> e610b3ec133dc63319e5e92baf61c1e3758713d0
 
 summary( model1 )
 
