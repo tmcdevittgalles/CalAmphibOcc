@@ -419,7 +419,7 @@ for( i in 1:nSites){  ## Looping over each sites
 
 for( i in 1:nSites){ ## looping through the sites
     for( k in 1:nYears){ ## looping through the years
-        prob <- Z[i, k] * pVar[k] ## probability of detecting the species
+        prob <- Z[i, k] * pConst ## probability of detecting the species
         v <- k * nVisits 
         y[i, v - 1 ] <- rbinom( 1, 1 , prob) ## Site i X year k X visit 1
         y[i, v ] <- rbinom(1,1, prob) ## Site i X year k X visit 2
